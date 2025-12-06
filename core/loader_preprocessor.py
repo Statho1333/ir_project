@@ -1,6 +1,6 @@
 import pandas as pd
-from ntlk.corpus import stopwords
-from greek_stemmer import GreekStemmer
+from nltk.corpus import stopwords
+from greek_stemmer import stemmer 
 
 
 class LoaderPreprocessor:
@@ -11,7 +11,7 @@ class LoaderPreprocessor:
 
     """A class to load and preprocess data from a CSV file."""
     def __init__(self, file_path: str, pickSubset: bool = False, subsetPercent: float = 0.1):
-        self.stemmer = GreekStemmer()
+        
         self.file_path = file_path
         self.pickSubset = pickSubset
         self.subsetPercent = subsetPercent
@@ -19,6 +19,7 @@ class LoaderPreprocessor:
         self.subsetPercent = self.__defineSubPercent()
         self.dataframe = self.load_data()
         self.cleaned_dataframe = self.__clean_text(self.dataframe)
+        self.cleaned_dataframe = self.drop_columns(self.cleaned_dataframe, ['parliamentary_sitting', 'parliamentary_session'])
 
 
     
@@ -105,8 +106,9 @@ class LoaderPreprocessor:
         return ' '.join(stemmed_words)
 
     def __stem_text(self, word: str) -> str:
+        print(f"Stemming word: {word}")
         if self.is_greek(word):
-            return self.stemmer.stem(word)
+            return stemmer.stem_word(word, 'VBG').lower()
         return word
 
     def is_greek(self, word: str) -> bool:
@@ -126,3 +128,28 @@ class LoaderPreprocessor:
             print(f"Cleaned data saved to {output_path}")
         except Exception as e:
             print(f"Error saving cleaned data: {e}")
+
+if __name__ == "__main__":
+    
+    # 1. Δώσε το path του CSV σου
+    csv_path = "data/raw/Greek_Parliament_Proceedings_1989_2019.csv"  # άλλαξέ το στο σωστό filename
+
+    # 2. Φτιάξε το αντικείμενο
+    lp = LoaderPreprocessor(
+        file_path=csv_path,
+        pickSubset=True,      # ή True αν θες υποσύνολο
+        subsetPercent=0.01      # αγνοείται αν pickSubset=False
+    )
+
+    # 3. Δες λίγο τι έγινε
+    print("----- Original dataframe shape -----")
+    print(lp.dataframe.shape)
+
+    print("\n----- Cleaned dataframe shape -----")
+    print(lp.cleaned_dataframe.shape)
+
+
+    lp.save_cleaned_data(lp.cleaned_dataframe, "data/processed/cleaned_data.csv")
+
+    print("\n----- First 3 cleaned rows -----")
+    print(lp.cleaned_dataframe["speech"].head(3))

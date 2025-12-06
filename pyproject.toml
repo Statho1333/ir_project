@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "greek-stemmer>=0.1.1",
+    "greek-stemmer-pos>=1.1.2",
     "nltk>=3.9.2",
     "numpy>=2.3.4",
     "pandas>=2.3.3",
