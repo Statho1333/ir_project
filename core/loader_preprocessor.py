@@ -118,7 +118,7 @@ class LoaderPreprocessor:
         Returns:
             str: The stemmed word in lowercase if Greek, otherwise the original word.
         """
-        print(f"Stemming word: {word}")
+        #print(f"Stemming word: {word}")
         if self.is_greek(word):
             return stemmer.stem_word(word, 'VBG').lower()
         return word
@@ -140,6 +140,16 @@ class LoaderPreprocessor:
             print(f"Cleaned data saved to {output_path}")
         except Exception as e:
             print(f"Error saving cleaned data: {e}")
+
+    def clean_text_string(self, text: str) -> str:
+
+        if not isinstance(text, str):
+            text = str(text)
+
+        text = text.lower()
+        text = ''.join(char for char in text if char.isalnum() or char.isspace())
+        text = self.__remove_stopwords(text)
+        return text
 
 if __name__ == "__main__":
     
