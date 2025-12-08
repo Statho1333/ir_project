@@ -106,6 +106,18 @@ class LoaderPreprocessor:
         return ' '.join(stemmed_words)
 
     def __stem_text(self, word: str) -> str:
+        """
+        Stem a given word using language-specific stemming rules.
+        
+        For Greek words, applies Greek stemming with verb gerund (VBG) rules.
+        For non-Greek words, returns the word unchanged.
+        
+        Args:
+            word (str): The word to be stemmed.
+        
+        Returns:
+            str: The stemmed word in lowercase if Greek, otherwise the original word.
+        """
         print(f"Stemming word: {word}")
         if self.is_greek(word):
             return stemmer.stem_word(word, 'VBG').lower()
