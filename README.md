@@ -1,1 +1,5 @@
-1. ΓΙΑ ΝΑ ΤΡΕΞΕΙ ΠΡΕΠΕΙ ΝΑ ΤΡΕΞΕΙΣ ΠΡΩΤΑ ΤΟ SRCIPTAKI ΜΟΝΟ ΤΟΥ ΤΟ ΟΠΟΙΟ ΜΠΟΡΕΙ ΝΑ ΠΑΡΕΙ ΑΡΚΕΤΗ ΩΡΑ, ΑΝΑΛΟΓΑ ΜΕ ΤΙΣ ΠΑΡΑΜΕΤΡΟΥΣ ΠΟΥ ΕΒΑΛΕΣ ΓΙΑ ΝΑ ΔΗΜΙΟΥΡΓΗΣΕΙ LSI ΚΑΙ ΝΑ ΚΑΘΑΡΙΣΕΙ ΤΟ DATASET
+-If you want to create everything from the begging
+    1. go to data/raw and add the file that will have the data
+    2. run sripts/build.py
+-If you want the created models you will find them on the next google drive
+    
