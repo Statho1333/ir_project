@@ -3,6 +3,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import Normalizer
 import numpy as np
+import os
+import joblib
 
 class VectorLSIModel:
 
@@ -63,16 +65,27 @@ class VectorLSIModel:
         return (self.doc_vectors @ query_vec.T).flatten() #dot product between document vectors and query vector
      
 
+    def save_models(self, folder: str = "models/lsi") -> None:
+        os.makedirs(folder, exist_ok=True)
+        joblib.dump(self.vectorizer, os.path.join(folder, "tfidf_vectorizer.joblib"))
+        joblib.dump(self.svd_model, os.path.join(folder, "svd_model.joblib"))
+        joblib.dump(self.normaliser, os.path.join(folder, "normaliser.joblib"))
+        joblib.dump(self.k_auto,  os.path.join(folder, "k_auto.joblib"))
 
+        if self.doc_vectors is not None:
+            joblib.dump(self.doc_vectors, os.path.join(folder, "doc_vectors.npy"))
 
+        if self.df is not None:
+            self.df.to_csv(os.path.join(folder, "documents.csv"), index=False)
 
+    def load_models(self, folder: str = "models/lsi") -> None:
+        self.vectorizer = joblib.load(os.path.join(folder, "tfidf_vectorizer.joblib"))
+        self.svd_model = joblib.load(os.path.join(folder, "svd_model.joblib"))
+        self.normaliser = joblib.load(os.path.join(folder, "normaliser.joblib"))
+        self.k_auto = joblib.load(os.path.join(folder, "k_auto.joblib"))
 
+        self.doc_vectors = joblib.load(os.path.join(folder, "doc_vectors.npy"))
+        self.df = pd.read_csv(os.path.join(folder, "documents.csv"))
 
-if __name__ == "__main__":
-    # φόρτωσε το cleaned csv που έφτιαξες πριν
-    df = pd.read_csv("data/processed/cleaned_data.csv")
+       
 
-    lsi = VectorLSIModel(text_col="speech")
-    lsi.fit(df)
-    lsi.fit_lsi()
-    print(f"1st 10 feature names: {lsi.vectorizer.get_feature_names_out()[:900]}")

@@ -452,6 +452,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "greek-stemmer-pos" },
+    { name = "joblib" },
     { name = "nltk" },
     { name = "numpy" },
     { name = "pandas" },
@@ -463,6 +464,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.124.0" },
     { name = "greek-stemmer-pos", specifier = ">=1.1.2" },
+    { name = "joblib", specifier = ">=1.5.2" },
     { name = "nltk", specifier = ">=3.9.2" },
     { name = "numpy", specifier = ">=2.3.4" },
     { name = "pandas", specifier = ">=2.3.3" },

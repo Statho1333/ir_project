@@ -17,9 +17,9 @@ class LoaderPreprocessor:
         self.subsetPercent = subsetPercent
 
         self.subsetPercent = self.__defineSubPercent()
-        self.dataframe = self.load_data()
-        self.cleaned_dataframe = self.__clean_text(self.dataframe)
-        self.cleaned_dataframe = self.drop_columns(self.cleaned_dataframe, ['parliamentary_sitting', 'parliamentary_session'])
+        self.dataframe = None
+        self.cleaned_dataframe = None
+        
 
 
     
@@ -43,6 +43,18 @@ class LoaderPreprocessor:
             return 1.0
 
     
+
+    def load_and_clean(self) -> pd.DataFrame:
+
+        raw = self.load_data()
+        self.dataframe = raw
+
+        cleaned = raw.copy()
+        cleaned = self.__clean_text(cleaned)
+        cleaned = self.drop_columns(cleaned, columns=['parliamentary_sitting','parliamentary_session'])
+        self.cleaned_dataframe = cleaned
+        return cleaned
+
     #MAYBE CHANGE TO LOG FILES
     def load_data(self) -> pd.DataFrame:
         """
@@ -151,27 +163,3 @@ class LoaderPreprocessor:
         text = self.__remove_stopwords(text)
         return text
 
-if __name__ == "__main__":
-    
-    # 1. Δώσε το path του CSV σου
-    csv_path = "data/raw/Greek_Parliament_Proceedings_1989_2019.csv"  # άλλαξέ το στο σωστό filename
-
-    # 2. Φτιάξε το αντικείμενο
-    lp = LoaderPreprocessor(
-        file_path=csv_path,
-        pickSubset=True,      # ή True αν θες υποσύνολο
-        subsetPercent=0.01      # αγνοείται αν pickSubset=False
-    )
-
-    # 3. Δες λίγο τι έγινε
-    print("----- Original dataframe shape -----")
-    print(lp.dataframe.shape)
-
-    print("\n----- Cleaned dataframe shape -----")
-    print(lp.cleaned_dataframe.shape)
-
-
-    lp.save_cleaned_data(lp.cleaned_dataframe, "data/processed/cleaned_data.csv")
-
-    print("\n----- First 3 cleaned rows -----")
-    print(lp.cleaned_dataframe["speech"].head(3))
