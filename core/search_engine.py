@@ -1,29 +1,27 @@
-from core.loader_preprocessor import Loader_Preprocessor
-from core.vector_lsi_model import Vector_LSI_Model
 import pandas as pd
-
+from core.loader_preprocessor import LoaderPreprocessor
+from core.vector_lsi_model import VectorLSIModel
+import numpy as np
 
 class Search_Engine:
-    def __init__(self, csv_path: str, query: str, name: str = "SearchEngine"):
-        self.name = name
-        self.csv_path = csv_path
-        self.query = query
+    def __init__(self, model_dir: str = "models/lsi_model/", text_col: str = "speech", target: float = 0.72):
+        
+        self.lsi = VectorLSIModel(text_col=text_col, target=target)
+        self.lsi.load_models(model_dir)
+
+        self.preprocessor = LoaderPreprocessor(file_path=None)
 
 
-    def __build_engine(self) -> None:
-        # Load and preprocess data
-        loader = Loader_Preprocessor(self.csv_path, pickSubset=False)
-        df = loader.cleaned_dataframe
 
-        # Build LSI model
-        lsi_model = Vector_LSI_Model(text_col='cleaned_text', target=0.72)
-        lsi_model.fit(df) #fit the model to the dataframe
-        lsi_model.fit_lsi() #perform SVD and reduce dimensionality
 
-        self.lsi_model = lsi_model #store the trained LSI model
-      
-    def search(self, query):
-        # Placeholder for search implementation
-        pass
+    def search(self, query: str, top_k: int = 10) -> pd.DataFrame:
+        cleaned_query = self.preprocessor.clean_text_string(query)
+        query_vec = self.lsi.query_vector(cleaned_query)
+        sims = self.lsi.cosine_sim(query_vec)
+        top_idx = np.argsort(sims)[::-1][:top_k]
+        results = self.lsi.df.iloc[top_idx].copy()
+        results["score"] = sims[top_idx]
+        return results
+    
 
-    #TODO : NEED TO IMPLEMENET IT, DONT CONSIDER IT YET
+    ## MAYBE NEED TO ADD MORE METHODS FOR RETURNING FILTERED SEARCH RESULTS BASED ON PARTY, DATE, NAME, ETC.

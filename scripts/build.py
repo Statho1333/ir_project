@@ -9,7 +9,7 @@ if __name__ == "__main__":
     model_dir = "models/lsi_model/"
 
     ##Load and preprocess data
-    lp = LoaderPreprocessor(file_path=raw_data_path, pickSubset=True, subsetPercent=0.1)
+    lp = LoaderPreprocessor(file_path=raw_data_path, pickSubset=False)
     cleaned_df = lp.load_and_clean()
 
     # Save cleaned data
@@ -18,6 +18,6 @@ if __name__ == "__main__":
     #lsi model
     lsi_model = VectorLSIModel(text_col="speech", target=0.72)
     lsi_model.fit(cleaned_df) #fit the model to the dataframe
-    lsi_model.fit_lsi() #perform SVD and reduce dimensionality
+    lsi_model.fit_lsi(k_cap=100) #perform SVD and reduce dimensionality
 
     lsi_model.save_models(model_dir)
