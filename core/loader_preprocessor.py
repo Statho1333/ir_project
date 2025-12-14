@@ -17,9 +17,9 @@ class LoaderPreprocessor:
         self.subsetPercent = subsetPercent
 
         self.subsetPercent = self.__defineSubPercent()
-        self.dataframe = self.load_data()
-        self.cleaned_dataframe = self.__clean_text(self.dataframe)
-        self.cleaned_dataframe = self.drop_columns(self.cleaned_dataframe, ['parliamentary_sitting', 'parliamentary_session'])
+        self.dataframe = None
+        self.cleaned_dataframe = None
+        
 
 
     
@@ -43,6 +43,18 @@ class LoaderPreprocessor:
             return 1.0
 
     
+
+    def load_and_clean(self) -> pd.DataFrame:
+
+        raw = self.load_data()
+        self.dataframe = raw
+
+        cleaned = raw.copy()
+        cleaned = self.__clean_text(cleaned)
+        cleaned = self.drop_columns(cleaned, columns=['parliamentary_sitting','parliamentary_session'])
+        self.cleaned_dataframe = cleaned
+        return cleaned
+
     #MAYBE CHANGE TO LOG FILES
     def load_data(self) -> pd.DataFrame:
         """
@@ -106,7 +118,19 @@ class LoaderPreprocessor:
         return ' '.join(stemmed_words)
 
     def __stem_text(self, word: str) -> str:
-        print(f"Stemming word: {word}")
+        """
+        Stem a given word using language-specific stemming rules.
+        
+        For Greek words, applies Greek stemming with verb gerund (VBG) rules.
+        For non-Greek words, returns the word unchanged.
+        
+        Args:
+            word (str): The word to be stemmed.
+        
+        Returns:
+            str: The stemmed word in lowercase if Greek, otherwise the original word.
+        """
+        #print(f"Stemming word: {word}")
         if self.is_greek(word):
             return stemmer.stem_word(word, 'VBG').lower()
         return word
@@ -129,27 +153,13 @@ class LoaderPreprocessor:
         except Exception as e:
             print(f"Error saving cleaned data: {e}")
 
-if __name__ == "__main__":
-    
-    # 1. Δώσε το path του CSV σου
-    csv_path = "data/raw/Greek_Parliament_Proceedings_1989_2019.csv"  # άλλαξέ το στο σωστό filename
+    def clean_text_string(self, text: str) -> str:
 
-    # 2. Φτιάξε το αντικείμενο
-    lp = LoaderPreprocessor(
-        file_path=csv_path,
-        pickSubset=True,      # ή True αν θες υποσύνολο
-        subsetPercent=0.01      # αγνοείται αν pickSubset=False
-    )
+        if not isinstance(text, str):
+            text = str(text)
 
-    # 3. Δες λίγο τι έγινε
-    print("----- Original dataframe shape -----")
-    print(lp.dataframe.shape)
+        text = text.lower()
+        text = ''.join(char for char in text if char.isalnum() or char.isspace())
+        text = self.__remove_stopwords(text)
+        return text
 
-    print("\n----- Cleaned dataframe shape -----")
-    print(lp.cleaned_dataframe.shape)
-
-
-    lp.save_cleaned_data(lp.cleaned_dataframe, "data/processed/cleaned_data.csv")
-
-    print("\n----- First 3 cleaned rows -----")
-    print(lp.cleaned_dataframe["speech"].head(3))
