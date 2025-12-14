@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <title>Ομιλία - {{ rec.mp_name }}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ rec.mp_name }}</h1>
+            <p class="meta">Κόμμα: {{ rec.party }} — Ημερομηνία: {{ rec.date }}</p>
+            <p><a href="javascript:history.back()">« Επιστροφή στα αποτελέσματα</a></p>
+        </header>
+
+        <main>
+            <article class="speech-text">
+                <h2>Κείμενο Ομιλίας</h2>
+                <p>{{ rec.text }}</p>
+            </article>
+
+            <aside class="sidebar">
+                <h3>Top λέξεις</h3>
+                <ul>
+                    {% for term,score in keywords %}
+                        <li>{{ term }} <span class="score">({{ score }})</span></li>
+                    {% else %}
+                        <li>(χωρίς λέξεις)</li>
+                    {% endfor %}
+                </ul>
+            </aside>
+        </main>
+
+        <footer>
+            <p>IR project — λεπτομέρεια ομιλίας</p>
+        </footer>
+    </div>
+</body>
+</html>

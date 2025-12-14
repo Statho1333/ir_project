@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <title>Αποτελέσματα - Αναζήτηση: {{ query }}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Αποτελέσματα για: «{{ query }}»</h1>
+            <p>{{ count }} αποτελέσματα</p>
+            <p class="meta">Φίλτρα — Κόμμα: {{ party }} | Από: {{ date_from }} | Έως: {{ date_to }}</p>
+            <p><a href="/">Νέα αναζήτηση</a></p>
+        </header>
+
+        <main>
+            <aside class="sidebar">
+                <h3>Top keywords (συγκεντρωτικά)</h3>
+                <ul>
+                {% for term,score in top_terms %}
+                    <li>{{ term }} <span class="score">({{ score }})</span></li>
+                {% else %}
+                    <li>(χωρίς δεδομένα)</li>
+                {% endfor %}
+                </ul>
+            </aside>
+
+            <section class="results">
+                {% if results %}
+                    {% for r in results %}
+                        <article class="result-item">
+                            <h2><a href="/speech/{{ r.speech_id }}">{{ r.mp_name }}</a></h2>
+                            <p class="meta">Κόμμα: {{ r.party }} — Ημερομηνία: {{ r.date }}</p>
+                            <p class="snippet">{{ r.text[:400] }}{% if r.text|length > 400 %}...{% endif %}</p>
+                            <p><a href="/speech/{{ r.speech_id }}">Διαβάστε περισσότερα</a></p>
+                        </article>
+                    {% endfor %}
+                {% else %}
+                    <p>Δεν βρέθηκαν αποτελέσματα.</p>
+                {% endif %}
+            </section>
+        </main>
+
+        <footer>
+            <p>IR project — αποτελέσματα</p>
+        </footer>
+    </div>
+</body>
+</html>

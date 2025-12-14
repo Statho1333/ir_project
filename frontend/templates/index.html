@@ -1,10 +1,54 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="el">
 <head>
-    <title>Jinja Example</title>
+    <meta charset="utf-8">
+    <title>Αναζήτηση Ομιλιών - Βουλή</title>
+
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>Hello from Jinja!</h1>
+    <div class="container">
+        <header>
+            <h1>Αναζήτηση Ομιλιών Βουλής</h1>
+            <p>Γράψε λέξεις-κλειδιά για να αναζητήσουμε στις ομιλίες.</p>
+        </header>
+
+        <main>
+            <form action="/search" method="post" class="search-form">
+                <div class="form-group">
+                    <label for="q">Όρος αναζήτησης</label>
+                    <input id="q" name="q" type="text" placeholder="π.χ. οικονομία προσφυγικό" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Ονοματεπώνυμο Ομιλητή</label>
+                    <input id="name" name="name" type="text">
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Θέση Ομιλητή</label>
+                    <input id="role" name="role" type="text" placeholder="π.χ. Πρόεδρος, Βουλευτής, Υπουργός">
+                </div>
+
+                <div class="form-group">
+                    <label for="party">Κόμμα</label>
+                    <input id="party" name="party" type="text">
+                </div>
+
+                <div class="form-group">
+                    <label for="date_from">Από</label>
+                    <input id="date_from" name="date_from" type="date">
+                </div>
+
+                <div class="form-group">
+                    <label for="date_to">Έως</label>
+                    <input id="date_to" name="date_to" type="date">
+                </div>
+
+                <button type="submit" class="btn">Αναζήτηση</button>
+            </form>
+        </main>
+    </div>
 </body>
 </html>
-

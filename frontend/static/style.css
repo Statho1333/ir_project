@@ -1,33 +1,59 @@
-/* --- ΓΕΝΙΚΗ ΔΙΑΜΟΡΦΩΣΗ ΣΩΜΑΤΟΣ (BODY) --- */
 body {
-    font-family: Arial, sans-serif; /* Ορίζει τη γραμματοσειρά */
-    background-color: #f4f4f9; /* Ελαφρύ γκρι φόντο */
-    color: #333; /* Σκούρο γκρι χρώμα κειμένου */
-    margin: 20px; /* Κάποιο περιθώριο γύρω από το περιεχόμενο */
+    font-family: Arial, sans-serif;
+    margin: 0;
     padding: 0;
 }
 
-/* --- ΔΙΑΜΟΡΦΩΣΗ ΕΠΙΚΕΦΑΛΙΔΩΝ (HEADERS) --- */
-h1 {
-    color: #007bff; /* Μπλε χρώμα για τον κύριο τίτλο */
-    border-bottom: 2px solid #ccc; /* Μία γραμμή κάτω από τον τίτλο */
-    padding-bottom: 10px;
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
 }
 
-h2 {
-    color: #28a745; /* Πράσινο χρώμα για τους υπότιτλους */
+header h1 {
+    margin-bottom: 5px;
 }
 
-/* --- ΔΙΑΜΟΡΦΩΣΗ ΠΑΡΑΓΡΑΦΩΝ (PARAGRAPHS) --- */
-p {
-    line-height: 1.6; /* Αυξάνει το διάστιχο για ευκολότερη ανάγνωση */
+header p {
+    margin-bottom: 20px;
 }
 
-/* --- ΔΙΑΜΟΡΦΩΣΗ ΕΝΟΣ ΕΙΔΙΚΟΥ ΣΤΟΙΧΕΙΟΥ (π.χ. με ID) --- */
-#welcome-message {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 5px; /* Στρογγυλεμένες γωνίες */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Μικρή σκιά */
+/* ------------------------------
+   Search Form
+--------------------------------*/
+.search-form {
+    display: flex;
+    flex-direction: column; /* όλα κάθετα */
+    gap: 15px;              /* απόσταση ανάμεσα στα πεδία */
+    align-items: flex-start; /* ευθυγράμμιση αριστερά */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column; /* label πάνω από input */
+    width: 100%;            /* γεμίζει το πλάτος */
+}
+
+.form-group input {
+    padding: 5px 10px;
+    font-size: 1em;
+    width: 100%;
+}
+
+.search-form .btn {
+    padding: 8px 20px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+/* Responsive για κινητά */
+@media (max-width: 768px) {
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-form .btn {
+        width: 100%;
+    }
 }
