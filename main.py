@@ -8,7 +8,9 @@ import re
 
 app = FastAPI()
 
-# Static and templates
+# -------------------------
+# Static files and templates
+# -------------------------
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
@@ -41,12 +43,33 @@ def extract_top_terms(text: str, topn: int = 10):
 # -------------------------
 # Routes
 # -------------------------
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    # Mock metadata για dropdowns
+    parties = ["Νέα Δημοκρατία", "ΣΥΡΙΖΑ", "ΠΑΣΟΚ"]
+    mps = ["Βουλευτής 1", "Βουλευτής 2", "Βουλευτής 3"]
+    years = (1989, 2020)
+
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "parties": parties,
+            "mps": mps,
+            "years": years
+        }
+    )
 
 @app.post("/search", response_class=HTMLResponse)
-async def search(request: Request, q: str = Form(...), party: str = Form(None), date_from: str = Form(None), date_to: str = Form(None)):
+async def search(
+    request: Request,
+    q: str = Form(...),
+    party: str = Form(None),
+    mp: str = Form(None),
+    year_from: str = Form(None),
+    year_to: str = Form(None)
+):
     results = simple_text_search(q)
     combined_text = " ".join([r["text"] for r in results])
     top_terms = extract_top_terms(combined_text, topn=15)
@@ -58,8 +81,9 @@ async def search(request: Request, q: str = Form(...), party: str = Form(None), 
         "count": len(results),
         "top_terms": top_terms,
         "party": party or "",
-        "date_from": date_from or "",
-        "date_to": date_to or "",
+        "mp": mp or "",
+        "year_from": year_from or "",
+        "year_to": year_to or ""
     }
     return templates.TemplateResponse("results.html", context)
 
@@ -73,7 +97,10 @@ async def speech_detail(request: Request, speech_id: str):
         "text": f"Αυτό είναι ένα υποθετικό πλήρες κείμενο ομιλίας με id {speech_id}."
     }
     keywords = extract_top_terms(rec["text"], topn=20)
-    return templates.TemplateResponse("speech.html", {"request": request, "rec": rec, "keywords": keywords})
+    return templates.TemplateResponse(
+        "speech.html",
+        {"request": request, "rec": rec, "keywords": keywords}
+    )
 
 # -------------------------
 # Run
