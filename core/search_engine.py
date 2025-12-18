@@ -6,18 +6,16 @@ import numpy as np
 class Search_Engine:
     def __init__(self, model_dir: str = "models/lsi_model/", text_col: str = "speech", target: float = 0.72):
         """
-        Initialize the search engine with LSI model and text preprocessor.
+        Initialize the search engine with LSI model and preprocessor.
         Args:
-            model_dir (str, optional): Directory path containing the LSI model files. 
+            model_dir (str, optional): Directory path where LSI models are stored. 
                 Defaults to "models/lsi_model/".
-            text_col (str, optional): Name of the text column to use for vectorization. 
+            text_col (str, optional): Name of the text column to use for LSI model. 
                 Defaults to "speech".
-            target (float, optional): Target value for LSI model configuration. 
+            target (float, optional): Target parameter for the LSI model. 
                 Defaults to 0.72.
-        Attributes:
-            lsi (VectorLSIModel): Latent Semantic Indexing model instance.
-            preprocessor (LoaderPreprocessor): Text preprocessor instance.
         """
+ 
         
         self.lsi = VectorLSIModel(text_col=text_col, target=target)
         self.lsi.load_models(model_dir)
@@ -30,23 +28,19 @@ class Search_Engine:
     def search(self, query: str, top_k: int = 10) -> pd.DataFrame:
         """
         Search for documents similar to the given query using LSI (Latent Semantic Indexing).
-        
         Args:
-            query (str): The search query string to process and match against the document corpus.
-            top_k (int, optional): The maximum number of top results to return. Defaults to 10.
-        
+            query (str): The search query string.
+            top_k (int, optional): The number of top results to return. Defaults to 10.
         Returns:
-            pd.DataFrame: A DataFrame containing the top_k most similar documents with their 
-                         corresponding similarity scores in a 'score' column, sorted by relevance 
-                         in descending order.
-        
-        Process:
-            1. Cleans the input query text using the preprocessor
-            2. Converts the cleaned query to a vector representation using LSI
-            3. Computes cosine similarity between the query vector and all documents
-            4. Retrieves the top_k most similar documents
-            5. Adds similarity scores to the results DataFrame
+            pd.DataFrame: A DataFrame containing the top_k most similar documents with their similarity scores.
+                          Includes all original columns from the index plus a "score" column with cosine similarity values.
+        Raises:
+            None
+        Example:
+            >>> results = search_engine.search("machine learning", top_k=5)
+            >>> print(results[["title", "score"]])
         """
+        
         cleaned_query = self.preprocessor.clean_text_string(query)
         query_vec = self.lsi.query_vector(cleaned_query)
         sims = self.lsi.cosine_sim(query_vec)
