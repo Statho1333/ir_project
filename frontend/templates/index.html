@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <title>Αναζήτηση Ομιλιών - Βουλή</title>
+
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Αναζήτηση Ομιλιών Βουλής</h1>
+            <p>Γράψε λέξεις-κλειδιά για να αναζητήσουμε στις ομιλίες.</p>
+        </header>
+
+        <main>
+            <form action="/search" method="post" class="search-form">
+                <div class="form-group">
+                    <label for="q">Όρος αναζήτησης</label>
+                    <input id="q" name="q" type="text" required>
+                </div>
+                <div class="form-group">
+                    <label for="party">Κόμμα</label>
+                    <select name="party" id="party">
+                        <option value="">Όλα</option>
+                        {% for p in parties %}
+                           <option value="{{ p }}">{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mp">Βουλευτής</label>
+                    <select name="mp" id="mp">
+                        <option value="">Όλοι</option>
+                        {% for m in mps %}
+                        <option value="{{ m }}">{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date_from">Από</label>
+                    <input id="date_from" name="date_from" type="date"
+                </div>
+                <div class="form-group">
+                    <label for="date_to">Έως</label>
+                    <input id="date_to" name="date_to" type="date">
+                </div>
+                <button type="submit" class="btn">Αναζήτηση</button>
+            </form>
+        </main>
+    </div>
+</body>
+</html>
