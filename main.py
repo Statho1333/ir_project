@@ -5,8 +5,12 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 from collections import Counter
 import re
+from core.search_engine import Search_Engine
 
 app = FastAPI()
+print(">>> Initializing Search_Engine...")
+engine = Search_Engine()
+print(">>> Search_Engine initialized")
 
 # -------------------------
 # Static files and templates
@@ -102,8 +106,15 @@ async def speech_detail(request: Request, speech_id: str):
         {"request": request, "rec": rec, "keywords": keywords}
     )
 
+
+
+
+#DONT USE THIS, IT CAUSES PROBLEMS, INITIALISES TWICE SEARCH ENGINE
 # -------------------------
 # Run
 # -------------------------
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+#if __name__ == "__main__":
+#    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+    
+    
+

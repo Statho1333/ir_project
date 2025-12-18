@@ -1,8 +1,6 @@
 from core.search_engine import Search_Engine
 
-def main():
-    engine = Search_Engine()
-    print("Search Engine is ready to use.")
+
 
 def __init__(self):
         self.engine = Search_Engine()
