@@ -2,47 +2,41 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import uvicorn
+
 from collections import Counter
 import re
-from core.search_engine import Search_Engine
+import pandas as pd
+
+from scripts.run_search import RunSearchService
 
 app = FastAPI()
-print(">>> Initializing Search_Engine...")
-engine = Search_Engine()
-print(">>> Search_Engine initialized")
+
+print(">>> Initializing search service...")
+service = RunSearchService()
+print(">>> Ready")
 
 # -------------------------
-# Static files and templates
+# Static files & templates
 # -------------------------
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
 # -------------------------
-# Helper functions (mock)
+# Helpers
 # -------------------------
-def simple_text_search(q: str):
-    """
-    Mock search results for GUI purposes
-    """
-    sample = []
-    for i in range(1,6):
-        sample.append({
-            "speech_id": f"mock-{i}",
-            "mp_name": f"Βουλευτής {i}",
-            "party": "Δείγμα",
-            "date": "2010-01-01",
-            "text": f"Αυτό είναι ένα υποθετικό απόσπασμα με την λέξη {q} και περισσότερο κείμενο."
-        })
-    return sample
-
 def extract_top_terms(text: str, topn: int = 10):
+    if not text or not isinstance(text, str):
+        return []
     toks = re.findall(r"[Α-Ωα-ωΆΈΉΊΌΎΏάέήίόύώϊϋ\w']+", text.lower())
     toks = [t for t in toks if len(t) > 2]
-    stop = set(["κύριε","κυρία","κ.","και","του","της","το","των","στο","στη","στον","παρουσία","σας"])
+
+    stop = {
+        "κύριε", "κυρία", "και", "του", "της", "το",
+        "των", "στο", "στη", "στον", "παρουσία", "σας", "είναι", "από"
+    }
+
     toks = [t for t in toks if t not in stop]
-    ctr = Counter(toks)
-    return ctr.most_common(topn)
+    return Counter(toks).most_common(topn)
 
 # -------------------------
 # Routes
@@ -50,10 +44,9 @@ def extract_top_terms(text: str, topn: int = 10):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    # Mock metadata για dropdowns
-    parties = ["Νέα Δημοκρατία", "ΣΥΡΙΖΑ", "ΠΑΣΟΚ"]
-    mps = ["Βουλευτής 1", "Βουλευτής 2", "Βουλευτής 3"]
-    years = (1989, 2020)
+    parties = service.get_parties()
+    mps = service.get_mps()
+    years = service.get_year_range()
 
     return templates.TemplateResponse(
         "index.html",
@@ -71,50 +64,86 @@ async def search(
     q: str = Form(...),
     party: str = Form(None),
     mp: str = Form(None),
-    year_from: str = Form(None),
-    year_to: str = Form(None)
+    date_from: str = Form(None),
+    date_to: str = Form(None),
 ):
-    results = simple_text_search(q)
-    combined_text = " ".join([r["text"] for r in results])
-    top_terms = extract_top_terms(combined_text, topn=15)
+    # Searching in the engine
+    df = service.engine.search(q, top_k=30)
 
-    context = {
-        "request": request,
-        "query": q,
-        "results": results,
-        "count": len(results),
-        "top_terms": top_terms,
-        "party": party or "",
-        "mp": mp or "",
-        "year_from": year_from or "",
-        "year_to": year_to or ""
-    }
-    return templates.TemplateResponse("results.html", context)
+    # -------- Setting filters --------
+    if party:
+        df = df[df["political_party"] == party]
 
-@app.get("/speech/{speech_id}", response_class=HTMLResponse)
-async def speech_detail(request: Request, speech_id: str):
-    rec = {
-        "speech_id": speech_id,
-        "mp_name": "Δείγμα Βουλευτή",
-        "party": "Δείγμα",
-        "date": "2015-05-01",
-        "text": f"Αυτό είναι ένα υποθετικό πλήρες κείμενο ομιλίας με id {speech_id}."
-    }
-    keywords = extract_top_terms(rec["text"], topn=20)
+    if mp:
+        df = df[df["member_name"] == mp]
+
+    if date_from:
+        date_from_dt = pd.to_datetime(date_from)
+        df = df[df["sitting_date"] >= date_from_dt]
+    
+    if date_to:
+        date_to_dt = pd.to_datetime(date_to)
+        df = df[df["sitting_date"] <= date_to_dt]
+
+    # Creating a list with the results
+    results = []
+    for idx, row in df.iterrows():
+        raw_name = str(row.get("member_name", "Άγνωστος"))
+        raw_party = str(row.get("political_party", "---"))
+
+        # Modify names to be dispalyed properly
+        formatted_name = raw_name.title()
+        formatted_party = raw_party.upper() 
+
+        results.append({
+            "speech_id": str(idx), 
+            "mp_name": formatted_name,
+            "party": formatted_party,
+            "speech": row.get("speech", ""),
+            "date": row["sitting_date"].strftime('%d/%m/%Y') if pd.notnull(row["sitting_date"]) else "---"
+        })
+
+    combined_text = " ".join(r["speech"] for r in results)
+    top_terms = extract_top_terms(combined_text, 15)
+
     return templates.TemplateResponse(
-        "speech.html",
-        {"request": request, "rec": rec, "keywords": keywords}
+        "results.html",
+        {
+            "request": request,
+            "query": q,
+            "results": results,
+            "count": len(results),
+            "top_terms": top_terms,
+            "party": party or "",
+            "mp": mp or "",
+            "date_from": date_from or "",
+            "date_to": date_to or ""
+        }
     )
 
 
+@app.get("/speech/{speech_id}", response_class=HTMLResponse)
+async def speech_detail(request: Request, speech_id: str):
+    try:
+        idx = int(speech_id)
+        row = service.df.iloc[idx]
+        rec = {
+            "mp_name": row.get("member_name", "Άγνωστος"),
+            "party": row.get("political_party", "---"),
+            "date": row["sitting_date"].strftime('%d/%m/%Y') if pd.notnull(row["sitting_date"]) else "---",
+            "speech": row.get("speech", "Δεν βρέθηκε κείμενο")
+        }
 
+        keywords = extract_top_terms(rec["speech"], 20)
 
-#DONT USE THIS, IT CAUSES PROBLEMS, INITIALISES TWICE SEARCH ENGINE
-# -------------------------
-# Run
-# -------------------------
-#if __name__ == "__main__":
-#    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
-    
-    
-
+        return templates.TemplateResponse(
+            "speech.html",
+            {
+                "request": request,
+                "rec": rec,
+                "keywords": keywords
+            }
+        )
+    except Exception as e:
+        print(f"Error finding speech: {e}")
+        return HTMLResponse(content="Η ομιλία δεν βρέθηκε", status_code=404)

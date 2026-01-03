@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Αποτελέσματα - Αναζήτηση: {{ query }}</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
@@ -31,19 +31,27 @@
                     {% for r in results %}
                         <article class="result-item">
                             <h2><a href="/speech/{{ r.speech_id }}">{{ r.mp_name }}</a></h2>
+                            
                             <p class="meta">Κόμμα: {{ r.party }} — Ημερομηνία: {{ r.date }}</p>
-                            <p class="snippet">{{ r.text[:400] }}{% if r.text|length > 400 %}...{% endif %}</p>
-                            <p><a href="/speech/{{ r.speech_id }}">Διαβάστε περισσότερα</a></p>
+                            
+                            <p class="snippet">
+                                {{ r.speech[:400] }}{% if r.speech|length > 400 %}...{% endif %}
+                            </p>
+                            
+                            <p><a href="/speech/{{ r.speech_id }}" class="read-more">Διαβάστε περισσότερα</a></p>
                         </article>
                     {% endfor %}
                 {% else %}
-                    <p>Δεν βρέθηκαν αποτελέσματα.</p>
+                    <div class="no-results">
+                        <p>Δεν βρέθηκαν αποτελέσματα για τον όρο «{{ query }}».</p>
+                        <p><a href="/">Δοκιμάστε μια νέα αναζήτηση</a></p>
+                    </div>
                 {% endif %}
             </section>
         </main>
 
         <footer>
-            <p>IR project — αποτελέσματα</p>
+            <p>IR project — Σύστημα Αναζήτησης Κοινοβουλευτικών Ομιλιών</p>
         </footer>
     </div>
 </body>

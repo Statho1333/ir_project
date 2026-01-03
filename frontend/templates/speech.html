@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Ομιλία - {{ rec.mp_name }}</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
@@ -16,11 +16,11 @@
         <main>
             <article class="speech-text">
                 <h2>Κείμενο Ομιλίας</h2>
-                <p>{{ rec.text }}</p>
+                <p>{{ rec.speech }}</p>
             </article>
 
             <aside class="sidebar">
-                <h3>Top λέξεις</h3>
+                <h3>Top λέξεις ομιλίας</h3>
                 <ul>
                     {% for term,score in keywords %}
                         <li>{{ term }} <span class="score">({{ score }})</span></li>

@@ -29,9 +29,9 @@ header p {
 --------------------------------*/
 .search-form {
     display: flex;
-    flex-direction: column;   /* όλα κάθετα */
-    gap: 15px;                /* απόσταση ανάμεσα στα πεδία */
-    align-items: stretch;     /* όλα στο ίδιο πλάτος */
+    flex-direction: column;
+    gap: 15px;            
+    align-items: stretch;
     max-width: 500px;
     padding: 10px;
     background-color: #fafafa;
