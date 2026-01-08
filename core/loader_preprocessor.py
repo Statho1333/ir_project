@@ -80,6 +80,7 @@ class LoaderPreprocessor:
         self.dataframe = raw
 
         cleaned = raw.copy()
+        cleaned['speech_raw'] = cleaned["speech"].astype(str)
         cleaned = self.__clean_text(cleaned)
         cleaned = self.drop_columns(cleaned, columns=['parliamentary_sitting','parliamentary_session'])
         self.cleaned_dataframe = cleaned
