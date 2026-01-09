@@ -9,7 +9,7 @@ if __name__ == "__main__":
     model_dir = "models/lsi_model/"
 
     ##Load and preprocess data
-    lp = LoaderPreprocessor(file_path=raw_data_path, pickSubset=True,subsetPercent=0.05, min_words=80)
+    lp = LoaderPreprocessor(file_path=raw_data_path, pickSubset=False, min_words=80)
     cleaned_df = lp.load_and_clean()
     print("Data loaded and cleaned.")
 

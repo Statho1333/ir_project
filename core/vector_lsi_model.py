@@ -31,7 +31,8 @@ class VectorLSIModel:
         """
         self.text_col = text_col
         self.target = target
-        self.vectorizer = TfidfVectorizer(max_df=0.5, min_df = 10, token_pattern=r'(?u)[^\W\d_]{2,}', max_features=20000,ngram_range=(1,1))
+        self.vectorizer = TfidfVectorizer(max_df=0.5, min_df = 10, token_pattern=r'(?u)[^\W\d_]{2,}', max_features=50000,ngram_range=(1,1),
+                                          dtype=np.float32)
         self.normaliser = Normalizer(copy=False)
         
         #tdf

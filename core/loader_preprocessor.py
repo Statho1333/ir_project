@@ -81,20 +81,18 @@ class LoaderPreprocessor:
 
         df = self.drop_columns(df,columns=["parliamentary_sitting", "parliamentary_session"])
 
-        df["speech"] = df["speech"].astype(str)
-        df["raw_len"] = df["speech"].str.split().str.len()
+        df["speech"] = df["speech"].astype("string")
 
+        word_counts = df["speech"].str.count(r"\S+")
         before = len(df)
-        df = df[df["raw_len"]>=self.min_words]
+        df = df.loc[word_counts >= self.min_words].copy()
         after = len(df)
         print(f"Dropped {before - after} rows with less than {self.min_words} words.")
 
-        df.drop(columns=["raw_len"], inplace = True)
         
-
         df.rename(columns={"speech":"speech_raw"}, inplace=True)
-
-        df["speech"] = df["speech_raw"].map(self.clean_text_string)
+        df["speech_raw"] = df["speech_raw"].astype("string")
+        df["speech"] = df["speech_raw"].map(self.clean_text_string).astype("string")
         self.cleaned_dataframe = df
         print("Data loaded and cleaned successfully.")
         return df
