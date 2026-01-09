@@ -31,7 +31,7 @@ class VectorLSIModel:
         """
         self.text_col = text_col
         self.target = target
-        self.vectorizer = TfidfVectorizer(max_df=0.95, min_df = 5, token_pattern=r'(?u)[^\W\d_]{2,}')
+        self.vectorizer = TfidfVectorizer(max_df=0.5, min_df = 10, token_pattern=r'(?u)[^\W\d_]{2,}', max_features=20000,ngram_range=(1,1))
         self.normaliser = Normalizer(copy=False)
         
         #tdf
@@ -105,17 +105,21 @@ class VectorLSIModel:
         self.svd_model = TruncatedSVD(n_components=max_components, random_state=42)
         docs_vector_full = self.svd_model.fit_transform(self.tdfidf_matrix)  # docs x concepts
 
+        self.tdfidf_matrix = None  # Free memory
+
         self.cum_var = np.cumsum(self.svd_model.explained_variance_ratio_)
         idx = np.searchsorted(self.cum_var, self.target)
         if idx >= len(self.cum_var):
             idx = len(self.cum_var) - 1
         self.k_auto = idx + 1  # indices start at 0
 
-        self.doc_vectors = docs_vector_full[:, :self.k_auto]
+        self.doc_vectors = docs_vector_full[:, :self.k_auto].astype(np.float32, copy=False)
         self.doc_vectors = self.normaliser.fit_transform(self.doc_vectors)
 
         print(f"Auto-selected k = {self.k_auto}, cumulative variance = {self.cum_var[self.k_auto-1]:.3f}")
         print(f"Final LSI doc vectors shape: {self.doc_vectors.shape}")
+
+        del docs_vector_full  # Free memory
 
 
     def query_vector(self, query: str) -> np.array:
@@ -147,21 +151,6 @@ class VectorLSIModel:
         return query_lsi
     
     def cosine_sim(self, query_vec: np.ndarray)-> np.ndarray:
-        def cosine_sim(self, query_vec: np.ndarray) -> np.ndarray:
-            """
-            Calculate the cosine similarity between document vectors and a query vector.
-            
-            Computes the dot product between all stored document vectors and the query vector,
-            which represents the cosine similarity in the LSI (Latent Semantic Indexing) space.
-            
-            Args:
-                query_vec (np.ndarray): A query vector of shape (n_features,) or (n_features, 1)
-                                        representing the query in the LSI space.
-            
-            Returns:
-                np.ndarray: A 1D array of similarity scores, one for each document in the collection.
-                            Higher values indicate greater similarity to the query.
-            """
         return (self.doc_vectors @ query_vec.T).flatten() #dot product between document vectors and query vector
      
 

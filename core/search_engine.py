@@ -20,7 +20,7 @@ class Search_Engine:
         self.lsi = VectorLSIModel(text_col=text_col, target=target)
         self.lsi.load_models(model_dir)
 
-        self.preprocessor = LoaderPreprocessor(file_path=None)
+        self.preprocessor = LoaderPreprocessor(file_path=None,pickSubset=True,subsetPercent=0.05, min_words=80)
 
 
 

@@ -11,7 +11,7 @@ class LoaderPreprocessor:
     all_stopwords = greek_stopwords.union(english_stopwords)
 
     """A class to load and preprocess data from a CSV file."""
-    def __init__(self, file_path: str, pickSubset: bool = False, subsetPercent: float = 0.1):
+    def __init__(self, file_path: str, pickSubset: bool = False, subsetPercent: float = 0.1, min_words: int = 30):
         """
         Initialize the LoaderPreprocessor instance.
         Args:
@@ -30,6 +30,7 @@ class LoaderPreprocessor:
         self.file_path = file_path
         self.pickSubset = pickSubset
         self.subsetPercent = subsetPercent
+        self.min_words = min_words
 
         self.subsetPercent = self.__defineSubPercent()
         self.dataframe = None
@@ -76,15 +77,27 @@ class LoaderPreprocessor:
             pd.DataFrame: A cleaned DataFrame with text processed and specified columns removed.
         """
 
-        raw = self.load_data()
-        self.dataframe = raw
+        df = self.load_data()
 
-        cleaned = raw.copy()
-        cleaned['speech_raw'] = cleaned["speech"].astype(str)
-        cleaned = self.__clean_text(cleaned)
-        cleaned = self.drop_columns(cleaned, columns=['parliamentary_sitting','parliamentary_session'])
-        self.cleaned_dataframe = cleaned
-        return cleaned
+        df = self.drop_columns(df,columns=["parliamentary_sitting", "parliamentary_session"])
+
+        df["speech"] = df["speech"].astype(str)
+        df["raw_len"] = df["speech"].str.split().str.len()
+
+        before = len(df)
+        df = df[df["raw_len"]>=self.min_words]
+        after = len(df)
+        print(f"Dropped {before - after} rows with less than {self.min_words} words.")
+
+        df.drop(columns=["raw_len"], inplace = True)
+        
+
+        df.rename(columns={"speech":"speech_raw"}, inplace=True)
+
+        df["speech"] = df["speech_raw"].map(self.clean_text_string)
+        self.cleaned_dataframe = df
+        print("Data loaded and cleaned successfully.")
+        return df
 
     #MAYBE CHANGE TO LOG FILES
     def load_data(self) -> pd.DataFrame:
@@ -155,9 +168,9 @@ class LoaderPreprocessor:
    
         words = text.split()
         filtered_words = [word for word in words if word not in self.all_stopwords]
-        stemmed_words = [self.__stem_text(word) for word in filtered_words]
+        #stemmed_words = [self.__stem_text(word) for word in filtered_words]
         
-        return ' '.join(stemmed_words)
+        return ' '.join(filtered_words)
 
     def __stem_text(self, word: str) -> str:
         """
