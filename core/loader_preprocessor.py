@@ -25,6 +25,7 @@ class LoaderPreprocessor:
             subsetPercent (float): The percentage of data to use for the subset.
             dataframe (pd.DataFrame): The loaded dataframe. Initialized as None.
             cleaned_dataframe (pd.DataFrame): The cleaned/processed dataframe. Initialized as None.
+            min_words (int): Minimum number of words required in 'speech' column to keep the row.
         """
         
         self.file_path = file_path
@@ -66,16 +67,7 @@ class LoaderPreprocessor:
     
 
     def load_and_clean(self) -> pd.DataFrame:
-        """
-        Load raw data and perform cleaning operations.
-        
-        This method loads raw data, creates a copy for cleaning, removes unwanted text characters,
-        and drops specified columns related to parliamentary information. The original raw data
-        and cleaned data are stored as instance attributes for later reference.
-        
-        Returns:
-            pd.DataFrame: A cleaned DataFrame with text processed and specified columns removed.
-        """
+       
 
         df = self.load_data()
 

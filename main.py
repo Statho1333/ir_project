@@ -72,10 +72,10 @@ async def search(
 
     # -------- Setting filters --------
     if party:
-        df = df[df["political_party"] == party]
+        df = df[df["political_party"].astype("string").str.strip().str.upper() == party]
 
     if mp:
-        df = df[df["member_name"] == mp]
+        df = df[df["member_name"].astype("string").str.strip().str.upper() == mp]
 
     if date_from:
         date_from_dt = pd.to_datetime(date_from)
