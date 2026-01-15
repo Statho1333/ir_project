@@ -10,25 +10,26 @@ class VectorLSIModel:
 
     def __init__(self, text_col: str = "speech", target: float = 0.75):
         """
-        Initialize the LSI (Latent Semantic Indexing) model.
+        Initialize the VectorLSIModel with specified text column and target variance.
         Args:
-            text_col (str, optional): The name of the column containing text data to be vectorized.
-                Defaults to "speech".
-            target (float, optional): The target cumulative explained variance ratio for determining
-                the optimal number of components in SVD. Defaults to 0.75.
+            text_col (str, optional): Name of the text column to use. Defaults to "speech".
+            target (float, optional): Target cumulative explained variance for LSI. Defaults to 0.75.
+        Raises:
+            None
         Attributes:
-            text_col (str): The name of the text column.
-            target (float): Target cumulative variance threshold.
-            vectorizer (TfidfVectorizer): TF-IDF vectorizer configured with custom parameters
-                (max_df=0.95, min_df=5, token_pattern for words with 2+ characters).
-            normaliser (Normalizer): L2 normalizer for document vectors (copy=False).
-            tfidf_matrix (None or sparse matrix): Stores the TF-IDF matrix. Initialized as None.
-            df (None or DataFrame): Stores the input dataframe. Initialized as None.
-            svd_model (None or TruncatedSVD): Stores the fitted SVD model. Initialized as None.
-            cum_var (None or array-like): Stores cumulative explained variance ratios. Initialized as None.
-            doc_vectors (None or ndarray): Stores transformed document vectors. Initialized as None.
-            k_auto (None or int): Stores the automatically determined optimal number of components. Initialized as None.
+            text_col (str): Name of the text column.
+            target (float): Target cumulative explained variance for LSI.
+            vectorizer (TfidfVectorizer): TF-IDF vectorizer instance.
+            normaliser (Normalizer): Normalizer instance for LSI vectors.
+            tdfidf_matrix (sparse matrix): TF-IDF matrix of the documents.
+            df (pd.DataFrame): DataFrame containing the documents.
+            svd_model (TruncatedSVD): SVD model for LSI.
+            cum_var (np.ndarray): Cumulative explained variance ratios.
+            doc_vectors (np.ndarray): Document vectors in LSI space.
+            k_auto (int): Automatically selected number of LSI components.
         """
+
+
         self.text_col = text_col
         self.target = target
         self.vectorizer = TfidfVectorizer(max_df=0.5, min_df = 10, token_pattern=r'(?u)[^\W\d_]{2,}', max_features=50000,ngram_range=(1,1),
