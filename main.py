@@ -72,10 +72,10 @@ async def search(
 
     # -------- Setting filters --------
     if party:
-        df = df[df["political_party"] == party]
+        df = df[df["political_party"].astype("string").str.strip().str.upper() == party]
 
     if mp:
-        df = df[df["member_name"] == mp]
+        df = df[df["member_name"].astype("string").str.strip().str.upper() == mp]
 
     if date_from:
         date_from_dt = pd.to_datetime(date_from)
@@ -99,7 +99,7 @@ async def search(
             "speech_id": str(idx), 
             "mp_name": formatted_name,
             "party": formatted_party,
-            "speech": row.get("speech", ""),
+            "speech": row.get("speech_raw", row.get("speech", "")),
             "date": row["sitting_date"].strftime('%d/%m/%Y') if pd.notnull(row["sitting_date"]) else "---"
         })
 
@@ -126,12 +126,15 @@ async def search(
 async def speech_detail(request: Request, speech_id: str):
     try:
         idx = int(speech_id)
-        row = service.df.iloc[idx]
+        row = service.df.loc[idx]#εδώ άλλαξα
+        print("DEBUG speech_raw len:", len(str(row.get("speech_raw", ""))))
+        print("DEBUG speech len:", len(str(row.get("speech", ""))))
+
         rec = {
             "mp_name": row.get("member_name", "Άγνωστος"),
             "party": row.get("political_party", "---"),
             "date": row["sitting_date"].strftime('%d/%m/%Y') if pd.notnull(row["sitting_date"]) else "---",
-            "speech": row.get("speech", "Δεν βρέθηκε κείμενο")
+            "speech": row.get("speech_raw", "Δεν βρέθηκε κείμενο")
         }
 
         keywords = extract_top_terms(rec["speech"], 20)

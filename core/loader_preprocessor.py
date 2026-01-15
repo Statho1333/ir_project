@@ -5,13 +5,13 @@ from greek_stemmer import stemmer
 
 class LoaderPreprocessor:
    
-
+    #combine all stopwards from nltk for greek and english
     greek_stopwords = set(stopwords.words('greek'))
     english_stopwords = set(stopwords.words('english'))
     all_stopwords = greek_stopwords.union(english_stopwords)
 
     """A class to load and preprocess data from a CSV file."""
-    def __init__(self, file_path: str, pickSubset: bool = False, subsetPercent: float = 0.1):
+    def __init__(self, file_path: str, pickSubset: bool = False, subsetPercent: float = 0.1, min_words: int = 30):
         """
         Initialize the LoaderPreprocessor instance.
         Args:
@@ -25,11 +25,13 @@ class LoaderPreprocessor:
             subsetPercent (float): The percentage of data to use for the subset.
             dataframe (pd.DataFrame): The loaded dataframe. Initialized as None.
             cleaned_dataframe (pd.DataFrame): The cleaned/processed dataframe. Initialized as None.
+            min_words (int): Minimum number of words required in 'speech' column to keep the row.
         """
         
         self.file_path = file_path
         self.pickSubset = pickSubset
         self.subsetPercent = subsetPercent
+        self.min_words = min_words
 
         self.subsetPercent = self.__defineSubPercent()
         self.dataframe = None
@@ -66,24 +68,39 @@ class LoaderPreprocessor:
 
     def load_and_clean(self) -> pd.DataFrame:
         """
-        Load raw data and perform cleaning operations.
-        
-        This method loads raw data, creates a copy for cleaning, removes unwanted text characters,
-        and drops specified columns related to parliamentary information. The original raw data
-        and cleaned data are stored as instance attributes for later reference.
-        
+        Load data from CSV file and clean the 'speech' text column.
+        This method loads data from the specified CSV file, removes unnecessary columns,
+        filters out rows with insufficient word counts in the 'speech' column, and
+        cleans the text data by normalizing and removing stopwords.
         Returns:
-            pd.DataFrame: A cleaned DataFrame with text processed and specified columns removed.
+            pd.DataFrame: A cleaned pandas DataFrame with the original and cleaned 'speech' columns.
+        Raises:
+            None
+        Example:
+            >>> loader = LoaderPreprocessor(file_path='data/speeches.csv', pickSubset=True, subsetPercent=0.1, min_words=50)
+            >>> cleaned_df = loader.load_and_clean()
+            >>> print(cleaned_df.head())
         """
 
-        raw = self.load_data()
-        self.dataframe = raw
+        df = self.load_data()
 
-        cleaned = raw.copy()
-        cleaned = self.__clean_text(cleaned)
-        cleaned = self.drop_columns(cleaned, columns=['parliamentary_sitting','parliamentary_session'])
-        self.cleaned_dataframe = cleaned
-        return cleaned
+        df = self.drop_columns(df,columns=["parliamentary_sitting", "parliamentary_session"])
+
+        df["speech"] = df["speech"].astype("string")
+
+        word_counts = df["speech"].str.count(r"\S+")#not spaces 1 or more times
+        before = len(df)
+        df = df.loc[word_counts >= self.min_words].copy()
+        after = len(df)
+        print(f"Dropped {before - after} rows with less than {self.min_words} words.")
+
+        
+        df.rename(columns={"speech":"speech_raw"}, inplace=True)
+        df["speech_raw"] = df["speech_raw"].astype("string")
+        df["speech"] = df["speech_raw"].map(self.clean_text_string).astype("string")
+        self.cleaned_dataframe = df
+        print("Data loaded and cleaned successfully.")
+        return df
 
     #MAYBE CHANGE TO LOG FILES
     def load_data(self) -> pd.DataFrame:
@@ -110,7 +127,8 @@ class LoaderPreprocessor:
         except Exception as e:
             print(f"Error loading data: {e}")
             return pd.DataFrame()
-        
+    
+    #not used currently
     def __clean_text(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Clean and preprocess text data in the 'speech' column of a DataFrame.
@@ -137,27 +155,25 @@ class LoaderPreprocessor:
     
     def __remove_stopwords(self, text: str) -> str:
         """
-        Remove stopwords from the input text and apply stemming to the remaining words.
-        This method filters out common stopwords from the provided text and then
-        applies stemming to each of the remaining words to reduce them to their
-        root form.
+        Remove common stopwords from a text string.
         Args:
-            text (str): The input text from which stopwords should be removed.
+            text (str): The input text string from which stopwords will be removed.
         Returns:
-            str: A string containing the stemmed words with stopwords removed,
-                 joined by spaces.
+            str: The text string with stopwords removed.
         Example:
-            >>> result = self.__remove_stopwords("The quick brown fox jumps")
-            >>> # Returns stemmed words without common stopwords like "the"
+            >>> text = "This is a sample sentence with some stopwords."
+            >>> cleaned_text = self.__remove_stopwords(text)
+            >>> print(cleaned_text)
         """
         
    
         words = text.split()
         filtered_words = [word for word in words if word not in self.all_stopwords]
-        stemmed_words = [self.__stem_text(word) for word in filtered_words]
+        #stemmed_words = [self.__stem_text(word) for word in filtered_words]
         
-        return ' '.join(stemmed_words)
+        return ' '.join(filtered_words)
 
+    
     def __stem_text(self, word: str) -> str:
         """
         Stem a word if it is in Greek language, otherwise return the word as-is.
@@ -173,7 +189,7 @@ class LoaderPreprocessor:
         if self.is_greek(word):
             return stemmer.stem_word(word, 'VBG').lower()
         return word
-
+    #not used currently
     def is_greek(self, word: str) -> bool:
         """
         Check if a word contains any Greek characters.
