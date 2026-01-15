@@ -5,7 +5,7 @@ from greek_stemmer import stemmer
 
 class LoaderPreprocessor:
    
-
+    #combine all stopwards from nltk for greek and english
     greek_stopwords = set(stopwords.words('greek'))
     english_stopwords = set(stopwords.words('english'))
     all_stopwords = greek_stopwords.union(english_stopwords)
@@ -67,7 +67,20 @@ class LoaderPreprocessor:
     
 
     def load_and_clean(self) -> pd.DataFrame:
-       
+        """
+        Load data from CSV file and clean the 'speech' text column.
+        This method loads data from the specified CSV file, removes unnecessary columns,
+        filters out rows with insufficient word counts in the 'speech' column, and
+        cleans the text data by normalizing and removing stopwords.
+        Returns:
+            pd.DataFrame: A cleaned pandas DataFrame with the original and cleaned 'speech' columns.
+        Raises:
+            None
+        Example:
+            >>> loader = LoaderPreprocessor(file_path='data/speeches.csv', pickSubset=True, subsetPercent=0.1, min_words=50)
+            >>> cleaned_df = loader.load_and_clean()
+            >>> print(cleaned_df.head())
+        """
 
         df = self.load_data()
 
@@ -75,7 +88,7 @@ class LoaderPreprocessor:
 
         df["speech"] = df["speech"].astype("string")
 
-        word_counts = df["speech"].str.count(r"\S+")
+        word_counts = df["speech"].str.count(r"\S+")#not spaces 1 or more times
         before = len(df)
         df = df.loc[word_counts >= self.min_words].copy()
         after = len(df)
@@ -114,7 +127,8 @@ class LoaderPreprocessor:
         except Exception as e:
             print(f"Error loading data: {e}")
             return pd.DataFrame()
-        
+    
+    #not used currently
     def __clean_text(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Clean and preprocess text data in the 'speech' column of a DataFrame.
@@ -141,18 +155,15 @@ class LoaderPreprocessor:
     
     def __remove_stopwords(self, text: str) -> str:
         """
-        Remove stopwords from the input text and apply stemming to the remaining words.
-        This method filters out common stopwords from the provided text and then
-        applies stemming to each of the remaining words to reduce them to their
-        root form.
+        Remove common stopwords from a text string.
         Args:
-            text (str): The input text from which stopwords should be removed.
+            text (str): The input text string from which stopwords will be removed.
         Returns:
-            str: A string containing the stemmed words with stopwords removed,
-                 joined by spaces.
+            str: The text string with stopwords removed.
         Example:
-            >>> result = self.__remove_stopwords("The quick brown fox jumps")
-            >>> # Returns stemmed words without common stopwords like "the"
+            >>> text = "This is a sample sentence with some stopwords."
+            >>> cleaned_text = self.__remove_stopwords(text)
+            >>> print(cleaned_text)
         """
         
    
@@ -162,6 +173,7 @@ class LoaderPreprocessor:
         
         return ' '.join(filtered_words)
 
+    
     def __stem_text(self, word: str) -> str:
         """
         Stem a word if it is in Greek language, otherwise return the word as-is.
@@ -177,7 +189,7 @@ class LoaderPreprocessor:
         if self.is_greek(word):
             return stemmer.stem_word(word, 'VBG').lower()
         return word
-
+    #not used currently
     def is_greek(self, word: str) -> bool:
         """
         Check if a word contains any Greek characters.
