@@ -4,7 +4,7 @@ from core.vector_lsi_model import VectorLSIModel
 import numpy as np
 
 class Search_Engine:
-    def __init__(self, model_dir: str = "models/lsi_model/", text_col: str = "speech", target: float = 0.72):
+    def __init__(self, model_dir: str = "models/lsi_model/", text_col: str = "speech", target: float = 0.75):
         """
         Initialize the search engine with LSI model and preprocessor.
         Args:
@@ -13,7 +13,7 @@ class Search_Engine:
             text_col (str, optional): Name of the text column to use for LSI model. 
                 Defaults to "speech".
             target (float, optional): Target parameter for the LSI model. 
-                Defaults to 0.72.
+                Defaults to 0.75.
         """
  
         
